@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/gasto.dart';
 import '../database/database_helper.dart';
 import 'form_screen.dart';
@@ -75,60 +76,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _confirmarEliminacion(int index) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar Gasto'),
-          content: const Text(
-            '¿Estás seguro de que deseas eliminar este gasto?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final gasto = listaFiltrada[index];
-                final id = gasto.id;
-                if (id != null) {
-                  await DatabaseHelper().eliminarGasto(id);
-                  await _cargarGastos();
-                }
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gastos'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final nuevoGasto = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FormScreen()),
-              );
-              if (nuevoGasto != null && nuevoGasto is Gasto) {
-                await DatabaseHelper().insertGasto(nuevoGasto);
-                await _cargarGastos();
-              }
-            },
+        backgroundColor: Colors.indigo,
+        title: const Text(
+          'Gastos',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            letterSpacing: 1.2,
           ),
+        ),
+        actions: [
           IconButton(
             icon: const Icon(Icons.pie_chart),
             onPressed: () {
@@ -161,6 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         _aplicarFiltros();
                       });
                     },
+                    dropdownColor: Colors.indigo[50],
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -188,49 +151,118 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
             padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.indigo[50],
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Text(
               'Total Gastos: \$${totalGastos.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 24.0),
+              style: const TextStyle(
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: listaFiltrada.length,
-              itemBuilder: (context, index) {
-                final gasto = listaFiltrada[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 16.0,
-                  ),
-                  child: ListTile(
-                    title: Text(gasto.descripcion),
-                    subtitle: Text(
-                      '${gasto.categoria} - \$${gasto.monto.toStringAsFixed(2)}',
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              child: listaFiltrada.isEmpty
+                  ? Center(
+                      key: const ValueKey('empty'),
+                      child: Text(
+                        'No hay gastos registrados.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _cargarGastos,
+                      child: ListView.builder(
+                        key: const ValueKey('list'),
+                        itemCount: listaFiltrada.length,
+                        itemBuilder: (context, index) {
+                          final gasto = listaFiltrada[index];
+                          return TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 400),
+                            tween: Tween(begin: 0, end: 1),
+                            builder: (context, value, child) => Opacity(
+                              opacity: value,
+                              child: Transform.translate(
+                                offset: Offset(0, 30 * (1 - value)),
+                                child: child,
+                              ),
+                            ),
+                            child: Card(
+                              color: Theme.of(context).colorScheme.surface,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 16.0,
+                              ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  child: const Icon(Icons.attach_money, color: Colors.white),
+                                ),
+                                title: Text(
+                                  gasto.descripcion,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  '${gasto.categoria} - ${DateFormat('dd/MM/yyyy').format(gasto.fecha)}',
+                                  style: TextStyle(color: Colors.green[200]),
+                                ),
+                                trailing: Text(
+                                  '\$${gasto.monto.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF27AE60), // Lighter green
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  final gastoEditado = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FormScreen(gasto: gasto),
+                                    ),
+                                  );
+                                  if (gastoEditado != null &&
+                                      gastoEditado is Gasto) {
+                                    await DatabaseHelper().updateGasto(
+                                      gastoEditado,
+                                    );
+                                    await _cargarGastos();
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmarEliminacion(index),
-                    ),
-                    onTap: () async {
-                      final gastoEditado = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FormScreen(gasto: gasto),
-                        ),
-                      );
-                      if (gastoEditado != null && gastoEditado is Gasto) {
-                        await DatabaseHelper().updateGasto(gastoEditado);
-                        await _cargarGastos();
-                      }
-                    },
-                  ),
-                );
-              },
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.indigo,
+        child: Icon(Icons.add),
+        onPressed: () async {
+          final nuevoGasto = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const FormScreen()),
+          );
+          if (nuevoGasto != null && nuevoGasto is Gasto) {
+            await DatabaseHelper().insertGasto(nuevoGasto);
+            await _cargarGastos();
+          }
+        },
       ),
     );
   }
