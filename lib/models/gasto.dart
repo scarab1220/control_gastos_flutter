@@ -13,6 +13,22 @@ class Gasto {
     required this.fecha,
   });
 
+  Gasto copyWith({
+    int? id,
+    String? descripcion,
+    String? categoria,
+    double? monto,
+    DateTime? fecha,
+  }) {
+    return Gasto(
+      id: id ?? this.id,
+      descripcion: descripcion ?? this.descripcion,
+      categoria: categoria ?? this.categoria,
+      monto: monto ?? this.monto,
+      fecha: fecha ?? this.fecha,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
