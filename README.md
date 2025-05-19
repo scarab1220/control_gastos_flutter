@@ -1,16 +1,26 @@
-# gastos_app
+# 💰 Control de Gastos Personales – Flutter App
 
-A new Flutter project.
+Aplicación móvil desarrollada en Flutter que permite registrar, filtrar, visualizar y exportar gastos personales, con persistencia local mediante SQLite.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📲 Funcionalidades principales
 
-A few resources to get you started if this is your first Flutter project:
+- Agregar, editar y eliminar gastos
+- Filtro por categoría y mes
+- Gráfico de pastel con resumen por categoría (`fl_chart`)
+- Alerta si se supera un límite mensual definido por el usuario
+- Exportación de gastos a CSV para compartir o analizar
+- Interfaz moderna y responsiva
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📁 Estructura del proyecto
+
+```bash
+lib/
+├── database/           # Manejo de SQLite (DatabaseHelper)
+├── models/             # Modelo Gasto
+├── screens/            # Pantallas: inicio, formulario, estadísticas
+├── utils/              # Funciones auxiliares: límite mensual
+└── main.dart           # Entrada principal
