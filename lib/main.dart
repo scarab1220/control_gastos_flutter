@@ -14,21 +14,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Control de Gastos',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color(0xFF145A32), // Dark green
-        scaffoldBackgroundColor: const Color(0xFF1B2E20),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF145A32), // Dark green
-          secondary: const Color(0xFF229954), // Lighter green
-          background: const Color(0xFF1B2E20),
-          surface: const Color(0xFF223322),
+        brightness: Brightness.light,
+        primaryColor: const Color(0xFF43A047), // Light green
+        scaffoldBackgroundColor: const Color(0xFFE8F5E9), // Very light green
+        colorScheme: ColorScheme.light(
+          primary: const Color(0xFF43A047), // Light green
+          secondary: const Color(0xFF81C784), // Lighter green
+          background: const Color(0xFFE8F5E9),
+          surface: const Color(0xFFC8E6C9),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF145A32),
+          backgroundColor: Color(0xFF43A047),
           foregroundColor: Colors.white,
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color(0xFF229954),
+          backgroundColor: Color(0xFF81C784),
         ),
       ),
       home: const HomeScreen(),

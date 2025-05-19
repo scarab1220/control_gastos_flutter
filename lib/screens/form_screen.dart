@@ -56,11 +56,11 @@ class _FormScreenState extends State<FormScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: const Color(0xFF145A32), // Dark green
+            colorScheme: ColorScheme.light(
+              primary: const Color(0xFF43A047), // Light green
               onPrimary: Colors.white,
-              surface: const Color(0xFF223322),
-              onSurface: Colors.white,
+              surface: const Color(0xFFE8F5E9),
+              onSurface: Colors.black,
             ),
           ),
           child: child!,
@@ -91,6 +91,7 @@ class _FormScreenState extends State<FormScreen> {
   @override
   Widget build(BuildContext context) {
     final green = Theme.of(context).colorScheme.primary;
+    final surface = Theme.of(context).colorScheme.surface;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: green,
@@ -115,12 +116,12 @@ class _FormScreenState extends State<FormScreen> {
                   decoration: InputDecoration(
                     labelText: 'Descripción',
                     filled: true,
-                    fillColor: Colors.green[900]?.withOpacity(0.1),
+                    fillColor: surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'La descripción es obligatoria';
@@ -134,12 +135,12 @@ class _FormScreenState extends State<FormScreen> {
                   decoration: InputDecoration(
                     labelText: 'Categoría',
                     filled: true,
-                    fillColor: Colors.green[900]?.withOpacity(0.1),
+                    fillColor: surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'La categoría es obligatoria';
@@ -153,12 +154,12 @@ class _FormScreenState extends State<FormScreen> {
                   decoration: InputDecoration(
                     labelText: 'Monto',
                     filled: true,
-                    fillColor: Colors.green[900]?.withOpacity(0.1),
+                    fillColor: surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -177,13 +178,13 @@ class _FormScreenState extends State<FormScreen> {
                   decoration: InputDecoration(
                     labelText: 'Fecha',
                     filled: true,
-                    fillColor: Colors.green[900]?.withOpacity(0.1),
+                    fillColor: surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     suffixIcon: Icon(Icons.calendar_today, color: green),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                   readOnly: true,
                   onTap: seleccionarFecha,
                   validator: (value) {

@@ -20,14 +20,14 @@ class EstadisticasScreen extends StatelessWidget {
 
     final List<PieChartSectionData> secciones = [];
     final colores = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-      Colors.indigo,
-      Colors.brown,
+      const Color(0xFF81C784), // Light Green
+      const Color(0xFFA5D6A7), // Lighter Green
+      const Color(0xFFC8E6C9), // Very Light Green
+      const Color(0xFFB9F6CA), // Mint Green
+      const Color(0xFF69F0AE), // Green Accent
+      const Color(0xFF00E676), // Green Accent
+      const Color(0xFF1DE9B6), // Teal Accent
+      const Color(0xFF00BFA5), // Teal
     ];
 
     int i = 0;
@@ -38,7 +38,7 @@ class EstadisticasScreen extends StatelessWidget {
           value: monto,
           title: '${(monto / total * 100).toStringAsFixed(1)}%',
           radius: 80,
-          titleStyle: const TextStyle(fontSize: 14, color: Colors.white),
+          titleStyle: const TextStyle(fontSize: 14, color: Color(0xFF388E3C), fontWeight: FontWeight.bold),
         ),
       );
       i++;
@@ -64,11 +64,19 @@ class EstadisticasScreen extends StatelessWidget {
               (entry) => ListTile(
                 leading: CircleAvatar(
                   backgroundColor:
-                      colores[datos.keys.toList().indexOf(entry.key) %
-                          colores.length],
+                      colores[datos.keys.toList().indexOf(entry.key) % colores.length],
                 ),
-                title: Text(entry.key),
-                trailing: Text('\$${entry.value.toStringAsFixed(2)}'),
+                title: Text(
+                  entry.key,
+                  style: const TextStyle(color: Color(0xFF388E3C)), // Darker green for contrast
+                ),
+                trailing: Text(
+                  '\$${entry.value.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Color(0xFF388E3C),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
