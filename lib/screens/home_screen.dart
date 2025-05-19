@@ -3,21 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/gasto.dart';
 import '../database/database_helper.dart';
 import 'form_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-class LimiteHelper {
-  static const String _limiteKey = 'limite_mensual';
-
-  static Future<void> guardarLimite(double limite) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_limiteKey, limite);
-  }
-
-  static Future<double> obtenerLimite() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getDouble(_limiteKey) ?? 0.0;
-  }
-}
+import '../utils/limite_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -31,6 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Gasto> listaFiltrada = [];
   String categoriaSeleccionada = 'Todos'; // <-- Not nullable
   int mesSeleccionado = 0;
+
+  final List<String> categoriasPredefinidas = [
+    'Comida',
+    'Transporte',
+    'Salud',
+    'Entretenimiento',
+    'Educación',
+    'Hogar',
+    'Otros',
+  ];
 
   @override
   void initState() {
@@ -74,11 +70,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<String> _categoriasUnicas() {
-    return listaGastos
-        .map((g) => g.categoria)
-        .where((cat) => cat != 'Todos')
-        .toSet()
-        .toList();
+    final categoriasGastos =
+        listaGastos
+            .map((g) => g.categoria)
+            .where((cat) => cat != 'Todos')
+            .toSet();
+    return [
+      ...categoriasPredefinidas,
+      ...categoriasGastos.where((cat) => !categoriasPredefinidas.contains(cat)),
+    ];
   }
 
   String _nombreMes(int numero) {
@@ -203,13 +203,62 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: DropdownButton<String>(
                     value: categoriaSeleccionada,
-                    items:
-                        ['Todos', ..._categoriasUnicas()].map((cat) {
-                          return DropdownMenuItem(value: cat, child: Text(cat));
-                        }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        categoriaSeleccionada = value;
+                    items: [
+                      const DropdownMenuItem(
+                        value: 'Todos',
+                        child: Text('Todos'),
+                      ),
+                      ..._categoriasUnicas().map(
+                        (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                      ),
+                      const DropdownMenuItem(
+                        value: 'agregar',
+                        child: Text('Agregar categoría...'),
+                      ),
+                    ],
+                    onChanged: (value) async {
+                      if (value == 'agregar') {
+                        final nuevaCategoria = await showDialog<String>(
+                          context: context,
+                          builder: (context) {
+                            final controller = TextEditingController();
+                            return AlertDialog(
+                              title: const Text('Nueva categoría'),
+                              content: TextField(
+                                controller: controller,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nombre de la categoría',
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    final text = controller.text.trim();
+                                    if (text.isNotEmpty) {
+                                      Navigator.pop(context, text);
+                                    }
+                                  },
+                                  child: const Text('Agregar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (nuevaCategoria != null &&
+                            nuevaCategoria.isNotEmpty) {
+                          setState(() {
+                            categoriaSeleccionada = nuevaCategoria;
+                          });
+                          _aplicarFiltros();
+                        }
+                      } else if (value != null) {
+                        setState(() {
+                          categoriaSeleccionada = value;
+                        });
                         _aplicarFiltros();
                       }
                     },
@@ -318,13 +367,84 @@ class _HomeScreenState extends State<HomeScreen> {
                                     '${gasto.categoria} - ${DateFormat('dd/MM/yyyy').format(gasto.fecha)}',
                                     style: TextStyle(color: Colors.green[900]),
                                   ),
-                                  trailing: Text(
-                                    '\$${gasto.monto.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF388E3C), // Dark green
-                                      fontSize: 16,
-                                    ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '\$${gasto.monto.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF388E3C),
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () async {
+                                          try {
+                                            final confirm = await showDialog<
+                                              bool
+                                            >(
+                                              context: context,
+                                              builder:
+                                                  (context) => AlertDialog(
+                                                    title: const Text(
+                                                      'Eliminar gasto',
+                                                    ),
+                                                    content: const Text(
+                                                      '¿Estás seguro de que deseas eliminar este gasto?',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed:
+                                                            () => Navigator.pop(
+                                                              context,
+                                                              false,
+                                                            ),
+                                                        child: const Text(
+                                                          'Cancelar',
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed:
+                                                            () => Navigator.pop(
+                                                              context,
+                                                              true,
+                                                            ),
+                                                        child: const Text(
+                                                          'Eliminar',
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                            );
+                                            if (confirm == true &&
+                                                gasto.id != null) {
+                                              await DatabaseHelper()
+                                                  .eliminarGasto(gasto.id!);
+                                              await _cargarGastos();
+                                              await _verificarLimite();
+                                            }
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Error al eliminar gasto: $e',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
                                   ),
                                   onTap: () async {
                                     final gastoEditado = await Navigator.push(

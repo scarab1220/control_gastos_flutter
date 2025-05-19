@@ -18,6 +18,16 @@ class _FormScreenState extends State<FormScreen> {
   late TextEditingController _montoController;
   late TextEditingController _fechaController;
 
+  final List<String> categoriasPredefinidas = [
+    'Comida',
+    'Transporte',
+    'Salud',
+    'Entretenimiento',
+    'Educación',
+    'Hogar',
+    'Otros',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -130,8 +140,10 @@ class _FormScreenState extends State<FormScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _categoriaController,
+                DropdownButtonFormField<String>(
+                  value: _categoriaController.text.isNotEmpty
+                      ? _categoriaController.text
+                      : null,
                   decoration: InputDecoration(
                     labelText: 'Categoría',
                     filled: true,
@@ -140,9 +152,60 @@ class _FormScreenState extends State<FormScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.black),
+                  items: [
+                    ...categoriasPredefinidas.map(
+                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'agregar',
+                      child: Text('Agregar categoría...'),
+                    ),
+                  ],
+                  onChanged: (value) async {
+                    if (value == 'agregar') {
+                      final nuevaCategoria = await showDialog<String>(
+                        context: context,
+                        builder: (context) {
+                          final controller = TextEditingController();
+                          return AlertDialog(
+                            title: const Text('Nueva categoría'),
+                            content: TextField(
+                              controller: controller,
+                              decoration: const InputDecoration(
+                                labelText: 'Nombre de la categoría',
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  final text = controller.text.trim();
+                                  if (text.isNotEmpty) {
+                                    Navigator.pop(context, text);
+                                  }
+                                },
+                                child: const Text('Agregar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (nuevaCategoria != null && nuevaCategoria.isNotEmpty) {
+                        setState(() {
+                          _categoriaController.text = nuevaCategoria;
+                        });
+                      }
+                    } else if (value != null) {
+                      setState(() {
+                        _categoriaController.text = value;
+                      });
+                    }
+                  },
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
+                    if (_categoriaController.text.trim().isEmpty) {
                       return 'La categoría es obligatoria';
                     }
                     return null;

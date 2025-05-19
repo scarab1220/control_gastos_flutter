@@ -32,17 +32,20 @@ class DatabaseHelper {
     ''');
   }
 
+  /// Inserta un nuevo gasto en la base de datos.
   Future<int> insertGasto(Gasto gasto) async {
     final db = await database;
     return await db.insert('gastos', gasto.toMap());
   }
 
+  /// Obtiene todos los gastos de la base de datos.
   Future<List<Gasto>> obtenerGastos() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('gastos');
     return List.generate(maps.length, (i) => Gasto.fromMap(maps[i]));
   }
 
+  /// Actualiza un gasto existente.
   Future<int> updateGasto(Gasto gasto) async {
     final db = await database;
     return await db.update(
@@ -53,8 +56,9 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> eliminarGasto(int id) async {
+  /// Elimina un gasto por su ID.
+  Future<void> eliminarGasto(int id) async {
     final db = await database;
-    return await db.delete('gastos', where: 'id = ?', whereArgs: [id]);
+    await db.delete('gastos', where: 'id = ?', whereArgs: [id]);
   }
 }
